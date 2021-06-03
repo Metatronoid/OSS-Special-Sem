@@ -1,0 +1,164 @@
+---
+title: "HappinessAnalysis"
+author: "Anish Singh Walia"
+date: "May 4, 2018"
+output: html_document
+---
+
+## World Happiness Analysis
+
+
+The aim of the project is to find out and analyze which countries are happier and which social and economic reasons lead to the people of a country being happy and contentful.
+
+
+
+THe datasets are donwloaded from [Kaggle](https://www.kaggle.com/unsdsn/world-happiness/data). We have datasets for the years 2015, 2016and 2017. I also want to check that how does the happiness of a country has  changes over the course of 3 years.
+
+
+
+### Reading the datasets
+
+
+```{r ,message=FALSE,error=FALSE}
+
+
+require(dplyr)
+require(tidyr)
+require(highcharter)
+require(ggplot2)
+require(ggcorrplot)
+
+
+
+year_2015<-read.csv(file = "2015.csv")
+year_2016<-read.csv(file = "2016.csv")
+year_2017<-read.csv(file = "2017.csv")
+
+
+#function to remove columns with NA values
+remove_col<-function(df,x,colNum)
+{
+  df<-df[-colNum] #exculding column 
+  df #returns a updated dataframe with removed column X
+  
+  #can also use df[col]<-NULL to remove a dataframe
+  
+}
+
+#removing NA values
+year_2015<-remove_col(year_2015,X,13)
+year_2016<-remove_col(year_2016,X,14)
+year_2017<-remove_col(year_2017,X,13)
+
+
+
+
+```
+
+Let's do some descriptive analytics.
+
+
+### Descriptive Analytics
+
+```{r,message=FALSE,error=FALSE}
+summary(year_2015)
+
+#let's check the top 20 most happiest countries in 2015
+
+top_20df15<-year_2015 %>% filter(Happiness.Rank <= 20)
+
+hchart(top_20df15,hcaes(x = Country, y = Happiness.Rank),type="bar",name="Rank",color="#A45A8D") %>% 
+  hc_add_theme(hc_theme_elementary()) %>% 
+    hc_title(text="Top 20 most happy countries in 2015",align="center") 
+
+
+
+```
+
+
+Now let's see the happiness score of each country.
+
+```{r}
+
+hchart(top_20df15,hcaes(x = Country, y = Happiness.Score),type="line",name="score",color="#E8CF1C") %>% 
+  hc_add_theme(hc_theme_elementary()) %>% 
+    hc_title(text="Top 20 most happy countries in 2015 and their happiness scores",align="center") 
+
+
+
+```
+
+
+Let's check if there is some correlation between the happiness scores and socio and economic variables in dataset.
+
+```{r}
+
+cor.test(year_2015$Happiness.Score,year_2015$Economy..GDP.per.Capita.)
+#score of 0.78 which shows that there is a positive relation between both
+
+
+hchart(year_2015,hcaes(x = Happiness.Score, y = Economy..GDP.per.Capita.),type="point",color="black") %>% 
+  hc_add_theme(hc_theme_elementary()) %>% 
+    hc_title(text="Scatter plot of Happiness score and GDP per capita for ",align="center") %>% 
+  hc_subtitle(text="Year :2015",align="center")
+
+
+```
+The scatter plot shows the postive relation between both the variabes.
+
+As we can notice above , we have a significant t-value form the t-test and the p-values are also relatively small and significant from the level of significane $\alpha$ , which means that the results are significant and we can reject Null-hypothesis $H_0$. So both the variables are related.
+
+
+
+#### Box plot of Country and GDP(per capita income)
+
+
+```{r,error=FALSE,message=FALSE}
+
+hchart(top_20df15,hcaes(x = Country,y= Economy..GDP.per.Capita.),type="line",name="GDP",color="green") %>% 
+  hc_add_theme(hc_theme_elementary()) %>% 
+    hc_title(text="Top 20 countries and their GDP(per capita inccome)",align="center")  %>% 
+  hc_subtitle(text="Year : 2015",align="center")
+
+
+```
+
+Relation between happiness score and Trust on Goverment.
+
+```{r}
+
+cor1<-cor.test(year_2015$Happiness.Score,year_2015$Trust..Government.Corruption.)
+
+
+cor.test
+
+
+#lets make a function to generate a dataframe with all variables and their relative correlation scores with other variables.
+
+cor_data <- year_2015[,4:12]
+#data frame for the correlation between the numeric variables for year 2015 
+cor_data2015<-as.data.frame(round(cor(cor_data),2))
+
+```
+
+
+```{r}
+cor_data2015
+
+ggcorrplot(cor_data2015, hc.order = TRUE, type = "lower",
+   lab = TRUE)
+
+```
+
+
+
+Let's now check the most unhappy countries.
+
+
+```{r}
+
+Most_unhappy15<-year_2015 %>% filter(Happiness.Rank > 110 )
+
+```
+
+
